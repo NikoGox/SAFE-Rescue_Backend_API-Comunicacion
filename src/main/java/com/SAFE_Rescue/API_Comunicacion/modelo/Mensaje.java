@@ -3,8 +3,8 @@ package com.SAFE_Rescue.API_Comunicacion.modelo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Generated;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
 
@@ -12,25 +12,31 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "mensaje")
 public class Mensaje {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id_mensaje;
+    @Column(name = "id_mensaje")
+    private int idMensaje;
 
-    @Column(length = 5,nullable = false)
-    private int id_emisor;
+    @Column(name = "id_emisor", nullable = false)
+    private int idEmisor;
 
-    @Column(length = 5,nullable = false)
-    private int id_receptor;
+    @Column(name = "id_receptor", nullable = false)
+    private int idReceptor;
 
-    @Column(nullable = false)
-    private Date fecha_mensaje;
+    @Column(name = "fecha_mensaje", nullable = false)
+    private Date fechaMensaje;
 
-    @Column(length = 30,nullable = false)
+    @Column(name = "titulo", length = 30, nullable = false)
     private String titulo;
 
-    @Column(length = 200,nullable = false)
+    @Column(name = "contenido", length = 250, nullable = false)
     private String contenido;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_borrador_original", referencedColumnName = "id_brdr_mensaje", nullable = true)
+    @JsonIgnore
+    private BorradorMensaje borradorOriginal;
 }

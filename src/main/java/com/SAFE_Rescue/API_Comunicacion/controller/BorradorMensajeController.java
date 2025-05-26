@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api-administrador/v1/borradores-mensajes")
+@RequestMapping("/api-ciudadano/v1/borradores-mensajes")
 public class BorradorMensajeController {
 
     private final BorradorMensajeService borradorMensajeService;
@@ -47,34 +47,27 @@ public class BorradorMensajeController {
         try {
             BorradorMensaje borradorActualizado = borradorMensajeService.actualizarBorrador(idBorrador, datosActualizados);
             return new ResponseEntity<>(borradorActualizado, HttpStatus.OK);
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    @PutMapping("/{id}/enviar")
-    public ResponseEntity<BorradorMensaje> enviarBorrador(@PathVariable int id) {
-        try {
-            BorradorMensaje borradorEnviado = borradorMensajeService.enviarBorrador(id);
-            return new ResponseEntity<>(borradorEnviado, HttpStatus.OK);
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarBorrador(@PathVariable int id) {
         try {
             borradorMensajeService.eliminarBorrador(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    // MODIFICACIÓN: La clase interna EnviarBorradorRequest ya no es necesaria aquí.
+    // @Data
+    // @NoArgsConstructor
+    // @AllArgsConstructor
+    // static class EnviarBorradorRequest {
+    //     private int idReceptor;
+    // }
 }

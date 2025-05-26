@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-@Transactional
 @Service
 public class BorradorMensajeService {
 
@@ -29,15 +28,12 @@ public class BorradorMensajeService {
         return borradorMensajeRepository.save(borrador);
     }
 
+    @Transactional
     public BorradorMensaje actualizarBorrador(int idBorrador, BorradorMensaje datosActualizados) {
         Optional<BorradorMensaje> borradorExistente = borradorMensajeRepository.findById(idBorrador);
 
         if (borradorExistente.isPresent()) {
             BorradorMensaje borrador = borradorExistente.get();
-
-            if (borrador.isBorradorEnviado()) {
-                throw new IllegalStateException("No se puede actualizar un borrador que ya ha sido enviado.");
-            }
 
             if (datosActualizados.getBrdrTitulo() != null) {
                 borrador.setBrdrTitulo(datosActualizados.getBrdrTitulo());
@@ -52,22 +48,6 @@ public class BorradorMensajeService {
         }
     }
 
-    public BorradorMensaje enviarBorrador(int idBorrador) {
-        Optional<BorradorMensaje> borradorExistente = borradorMensajeRepository.findById(idBorrador);
-
-        if (borradorExistente.isPresent()) {
-            BorradorMensaje borrador = borradorExistente.get();
-
-            if (borrador.isBorradorEnviado()) {
-                throw new IllegalStateException("El borrador con ID: " + idBorrador + " ya ha sido enviado.");
-            }
-
-            borrador.setBorradorEnviado(true);
-            return borradorMensajeRepository.save(borrador);
-        } else {
-            throw new RuntimeException("Borrador no encontrado con ID: " + idBorrador + " para enviar.");
-        }
-    }
 
     public List<BorradorMensaje> obtenerTodosLosBorradores() {
         return borradorMensajeRepository.findAll();
@@ -77,14 +57,9 @@ public class BorradorMensajeService {
         return borradorMensajeRepository.findById(id);
     }
 
+    @Transactional
     public void eliminarBorrador(int id) {
         if (borradorMensajeRepository.existsById(id)) {
-            BorradorMensaje borrador = borradorMensajeRepository.findById(id).orElseThrow(
-                    () -> new RuntimeException("Error al obtener borrador para eliminar con ID: " + id)
-            );
-            if (borrador.isBorradorEnviado()) {
-                throw new IllegalStateException("No se puede eliminar un borrador que ya ha sido enviado.");
-            }
             borradorMensajeRepository.deleteById(id);
         } else {
             throw new RuntimeException("Borrador no encontrado con ID: " + id + " para eliminar.");
