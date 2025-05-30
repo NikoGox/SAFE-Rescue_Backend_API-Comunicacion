@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 import java.util.Date;
 
 
@@ -14,8 +13,9 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "borrador_mensaje")
-
 public class BorradorMensaje {
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_brdr_mensaje")
@@ -33,7 +33,10 @@ public class BorradorMensaje {
     @Column(name = "brdr_contenido", length = 250, nullable = false)
     private String brdrContenido;
 
+    /**
+     * Indica si el borrador ya ha sido enviado como mensaje.
+     * Un borrador enviado no debería ser modificado o re-enviado directamente.
+     */
     @Column(name = "borrador_enviado", nullable = false)
     private boolean borradorEnviado;
-
 }
