@@ -2,6 +2,7 @@ package com.SAFE_Rescue.API_Comunicacion.controller;
 
 import com.SAFE_Rescue.API_Comunicacion.modelo.Mensaje;
 import com.SAFE_Rescue.API_Comunicacion.service.MensajeService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,8 @@ import java.util.Optional;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
+
 
 /**
  * Controlador REST para la gestión de Mensajes enviados.

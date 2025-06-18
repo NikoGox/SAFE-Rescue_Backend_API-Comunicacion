@@ -14,6 +14,8 @@ import java.util.Optional;
  * Servicio que implementa la lógica de negocio para la gestión de Borradores de Mensajes.
  * Permite crear, actualizar, obtener y eliminar borradores.
  */
+
+@Transactional
 @Service
 public class BorradorMensajeService {
 
@@ -50,7 +52,6 @@ public class BorradorMensajeService {
      * @return El borrador actualizado.
      * @throws RuntimeException Si el borrador no se encuentra.
      */
-    @Transactional
     public BorradorMensaje actualizarBorrador(int idBorrador, BorradorMensaje datosActualizados) {
         Optional<BorradorMensaje> borradorExistente = borradorMensajeRepository.findById(idBorrador);
 
@@ -92,7 +93,6 @@ public class BorradorMensajeService {
      * @param id ID del borrador a eliminar.
      * @throws RuntimeException Si el borrador no se encuentra.
      */
-    @Transactional
     public void eliminarBorrador(int id) {
         if (borradorMensajeRepository.existsById(id)) {
             borradorMensajeRepository.deleteById(id);
