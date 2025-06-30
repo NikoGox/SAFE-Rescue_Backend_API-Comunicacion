@@ -20,10 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Arrays;
 
-@SpringBootTest(excludeAutoConfiguration = {
-        DataSourceAutoConfiguration.class,
-        HibernateJpaAutoConfiguration.class
-})
+@SpringBootTest
 @DisplayName("Tests para BorradorMensajeService")
 public class BorradorMensajeServiceTest {
 
