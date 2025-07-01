@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel; // <-- ¡Añade esta importación!
 
 import java.util.Date;
 
@@ -13,7 +14,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "borrador_mensaje")
-public class BorradorMensaje {
+public class BorradorMensaje extends RepresentationModel<BorradorMensaje> { // <-- ¡Haz que extienda de RepresentationModel!
 
 
     @Id

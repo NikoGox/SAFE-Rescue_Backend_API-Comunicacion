@@ -13,7 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean; // IMPORTANTE: Importar MockBean
 
 import java.util.Date;
 import java.util.List;
@@ -27,6 +27,9 @@ public class BorradorMensajeServiceTest {
     @Autowired
     private BorradorMensajeService borradorMensajeService;
 
+    // CAMBIO CLAVE: Usa @MockBean para que Spring reemplace el repositorio real con un mock.
+    // Esto inyectará el mock automáticamente en borradorMensajeService.
+    @MockBean
     private BorradorMensajeRepository borradorMensajeRepository;
 
     private Faker faker;
@@ -43,29 +46,35 @@ public class BorradorMensajeServiceTest {
                 faker.lorem().paragraph(2),
                 false
         );
+        // Reiniciar los mocks antes de cada prueba es una buena práctica,
+        // aunque @MockBean a menudo lo maneja automáticamente.
+        reset(borradorMensajeRepository);
     }
 
     @Test
     @DisplayName("Debería guardar un nuevo borrador y asignar fecha/estado por defecto")
     public void testGuardarBorrador_newBorrador() {
         BorradorMensaje newBorrador = new BorradorMensaje(
-                0,
+                0, // ID 0 para indicar que es nuevo
                 faker.number().numberBetween(1, 100),
                 null,
                 faker.lorem().sentence(3),
                 faker.lorem().paragraph(2),
-                true
+                true // Esto se debería cambiar a false por el servicio
         );
 
+        // Cuando se llama a save, simulamos que el repositorio devuelve el objeto con un ID y fecha
         when(borradorMensajeRepository.save(any(BorradorMensaje.class))).thenAnswer(invocation -> {
             BorradorMensaje savedBorrador = invocation.getArgument(0);
-            if (savedBorrador.getIdBrdrMensaje() == 0) {
-                savedBorrador.setIdBrdrMensaje(faker.number().numberBetween(100, 200));
-            }
-            if (savedBorrador.getFechaBrdrMensaje() == null) {
-                savedBorrador.setFechaBrdrMensaje(new Date());
-            }
-            savedBorrador.setBorradorEnviado(false);
+            // El servicio es quien debería establecer estos valores si no están.
+            // Aquí en el mock, solo simulamos lo que el repositorio devolvería si el servicio se los pasa.
+            // Si tu servicio modifica el objeto antes de save, mockea el save con ese objeto modificado.
+            // Para simplificar: el mock solo devuelve el objeto que el servicio le pasó,
+            // pero le asigna un ID para simular la persistencia.
+            savedBorrador.setIdBrdrMensaje(faker.number().numberBetween(100, 200));
+            // La fecha y el estado enviado los maneja el servicio, no el repositorio.
+            // Si el servicio no las toca, el mock las devuelve como están.
+            // Si el servicio las asigna, el objeto que llega al save() ya tendrá esos valores.
             return savedBorrador;
         });
 
@@ -73,6 +82,7 @@ public class BorradorMensajeServiceTest {
 
         assertNotNull(result);
         assertThat(result.getIdBrdrMensaje()).isNotZero();
+        // Asumiendo que tu servicio asigna la fecha si es null y pone borradorEnviado en false
         assertThat(result.getFechaBrdrMensaje()).isNotNull();
         assertThat(result.isBorradorEnviado()).isFalse();
         assertThat(result.getBrdrTitulo()).isEqualTo(newBorrador.getBrdrTitulo());
@@ -88,15 +98,15 @@ public class BorradorMensajeServiceTest {
         BorradorMensaje existingBorrador = new BorradorMensaje(
                 10,
                 faker.number().numberBetween(1, 100),
-                specificDate,
+                specificDate, // Fecha proporcionada
                 faker.lorem().sentence(3),
                 faker.lorem().paragraph(2),
-                true
+                true // Esto se debería cambiar a false por el servicio
         );
 
         when(borradorMensajeRepository.save(any(BorradorMensaje.class))).thenAnswer(invocation -> {
             BorradorMensaje savedBorrador = invocation.getArgument(0);
-            savedBorrador.setBorradorEnviado(false);
+            savedBorrador.setBorradorEnviado(false); // El servicio lo cambia a false
             return savedBorrador;
         });
 
@@ -104,7 +114,7 @@ public class BorradorMensajeServiceTest {
 
         assertNotNull(result);
         assertThat(result.getIdBrdrMensaje()).isEqualTo(10);
-        assertThat(result.getFechaBrdrMensaje()).isEqualTo(specificDate);
+        assertThat(result.getFechaBrdrMensaje()).isEqualTo(specificDate); // La fecha debe permanecer
         assertThat(result.isBorradorEnviado()).isFalse();
         verify(borradorMensajeRepository, times(1)).save(any(BorradorMensaje.class));
     }
@@ -117,7 +127,9 @@ public class BorradorMensajeServiceTest {
         updates.setBrdrTitulo("Nuevo Título Actualizado");
         updates.setBrdrContenido("Contenido actualizado para el borrador.");
 
+        // Cuando se busca por ID, devolver el sampleBorrador
         when(borradorMensajeRepository.findById(borradorId)).thenReturn(Optional.of(sampleBorrador));
+        // Cuando se llama a save con *cualquier* BorradorMensaje, devolver el mismo argumento que se pasó
         when(borradorMensajeRepository.save(any(BorradorMensaje.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         BorradorMensaje updatedBorrador = borradorMensajeService.actualizarBorrador(borradorId, updates);
@@ -126,8 +138,19 @@ public class BorradorMensajeServiceTest {
         assertEquals(borradorId, updatedBorrador.getIdBrdrMensaje());
         assertEquals(updates.getBrdrTitulo(), updatedBorrador.getBrdrTitulo());
         assertEquals(updates.getBrdrContenido(), updatedBorrador.getBrdrContenido());
+        // La fecha y el estado enviado del sampleBorrador original NO deberían cambiar
+        assertEquals(sampleBorrador.getFechaBrdrMensaje(), updatedBorrador.getFechaBrdrMensaje());
+        assertEquals(sampleBorrador.isBorradorEnviado(), updatedBorrador.isBorradorEnviado());
+
+
         verify(borradorMensajeRepository, times(1)).findById(borradorId);
-        verify(borradorMensajeRepository, times(1)).save(sampleBorrador);
+        // Verifica que se llamó a save con el objeto 'sampleBorrador' modificado (el que fue devuelto por findById)
+        // Usamos 'any(BorradorMensaje.class)' o capturamos el argumento para verificar sus propiedades
+        verify(borradorMensajeRepository, times(1)).save(argThat(b ->
+                b.getIdBrdrMensaje() == borradorId &&
+                        b.getBrdrTitulo().equals(updates.getBrdrTitulo()) &&
+                        b.getBrdrContenido().equals(updates.getBrdrContenido())
+        ));
     }
 
     @Test
@@ -208,6 +231,7 @@ public class BorradorMensajeServiceTest {
     public void testEliminarBorrador_existing() {
         int borradorId = sampleBorrador.getIdBrdrMensaje();
         when(borradorMensajeRepository.existsById(borradorId)).thenReturn(true);
+        // doNothing().when() es para métodos void
         doNothing().when(borradorMensajeRepository).deleteById(borradorId);
 
         borradorMensajeService.eliminarBorrador(borradorId);

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.hateoas.RepresentationModel; // <-- ¡NUEVA IMPORTACIÓN!
 
 import java.util.Date;
 
@@ -14,7 +15,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "mensaje")
-public class Mensaje {
+public class Mensaje extends RepresentationModel<Mensaje> { // <-- ¡HEREDA DE RepresentationModel!
 
 
     @Id
@@ -43,6 +44,6 @@ public class Mensaje {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_borrador_original", referencedColumnName = "id_brdr_mensaje", nullable = true)
-    @JsonIgnore
+    @JsonIgnore // Mantenemos JsonIgnore por ahora para evitar loops de serialización
     private BorradorMensaje borradorOriginal;
 }

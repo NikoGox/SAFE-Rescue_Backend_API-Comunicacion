@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException; // <-- ¡NUEVA IMPORTACIÓN!
 import java.util.Optional;
 
 /**
@@ -39,29 +40,36 @@ public class MensajeService {
      * @param idBorrador ID del borrador original.
      * @param idReceptor ID del usuario/entidad que recibirá el mensaje.
      * @return El mensaje creado y guardado.
-     * @throws RuntimeException Si el borrador no es encontrado.
+     * @throws NoSuchElementException Si el borrador no es encontrado.
      */
     @Transactional
     public Mensaje crearMensajeDesdeBorradorYReceptor(int idBorrador, int idReceptor) {
         Optional<BorradorMensaje> borradorOptional = borradorMensajeRepository.findById(idBorrador);
 
         if (borradorOptional.isEmpty()) {
-            throw new RuntimeException("Borrador con ID " + idBorrador + " no encontrado para crear el mensaje.");
+            // Lanza NoSuchElementException para que el controlador pueda mapearlo a 404
+            throw new NoSuchElementException("Borrador con ID " + idBorrador + " no encontrado para crear el mensaje.");
         }
 
         BorradorMensaje borrador = borradorOptional.get();
 
+        // Puedes añadir una validación extra si el borrador ya fue enviado:
+        if (borrador.isBorradorEnviado()) {
+            throw new IllegalStateException("El borrador con ID " + idBorrador + " ya ha sido enviado y no puede usarse para crear otro mensaje.");
+        }
+
+
         Mensaje nuevoMensaje = new Mensaje();
         nuevoMensaje.setIdEmisor(borrador.getIdBrdrEmisor());
         nuevoMensaje.setIdReceptor(idReceptor);
-        nuevoMensaje.setFechaMensaje(new Date());
+        nuevoMensaje.setFechaMensaje(new Date()); // La fecha actual de envío del mensaje
         nuevoMensaje.setTitulo(borrador.getBrdrTitulo());
         nuevoMensaje.setContenido(borrador.getBrdrContenido());
-        nuevoMensaje.setBorradorOriginal(borrador);
+        nuevoMensaje.setBorradorOriginal(borrador); // Asocia el borrador
 
         Mensaje mensajeGuardado = mensajeRepository.save(nuevoMensaje);
 
-        // Marca el borrador como enviado
+        // Marca el borrador como enviado después de guardar el mensaje
         borrador.setBorradorEnviado(true);
         borradorMensajeRepository.save(borrador);
 
@@ -88,14 +96,15 @@ public class MensajeService {
     /**
      * Elimina un mensaje por su identificador único.
      * @param idMensaje ID del mensaje a eliminar.
-     * @throws RuntimeException Si el mensaje no se encuentra.
+     * @throws NoSuchElementException Si el mensaje no se encuentra.
      */
     @Transactional
     public void eliminarMensaje(int idMensaje) {
         if (mensajeRepository.existsById(idMensaje)) {
             mensajeRepository.deleteById(idMensaje);
         } else {
-            throw new RuntimeException("Mensaje no encontrado con ID: " + idMensaje + " para eliminar.");
+            // Lanza NoSuchElementException para que el controlador pueda mapearlo a 404
+            throw new NoSuchElementException("Mensaje no encontrado con ID: " + idMensaje + " para eliminar.");
         }
     }
 }
