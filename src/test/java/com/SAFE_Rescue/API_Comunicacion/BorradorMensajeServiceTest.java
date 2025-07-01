@@ -27,9 +27,6 @@ public class BorradorMensajeServiceTest {
     @Autowired
     private BorradorMensajeService borradorMensajeService;
 
-    // Mock del repositorio para aislar la lógica del servicio.
-    // NOTA: @MockitoBean está deprecated en Spring Boot 3.4.x, pero se mantiene por requisitos de la prueba.
-    @MockitoBean
     private BorradorMensajeRepository borradorMensajeRepository;
 
     private Faker faker;
